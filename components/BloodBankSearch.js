@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import dynamic from "next/dynamic";
 import { t } from "@/lib/i18n";
 import BloodBankCard from "@/components/BloodBankCard";
@@ -19,7 +19,14 @@ const BloodBankMap = dynamic(() => import("@/components/BloodBankMap"), {
 export default function BloodBankSearch({ banks }) {
   const [state, setState] = useState("");
   const [city, setCity] = useState("");
+  const [searchText, setSearchText] = useState("");
+  const [searchTerm, setSearchTerm] = useState("");
   const [view, setView] = useState("list");
+
+  useEffect(() => {
+    const timer = setTimeout(() => setSearchTerm(searchText.trim().toLowerCase()), 250);
+    return () => clearTimeout(timer);
+  }, [searchText]);
 
   const states = useMemo(
     () => [...new Set(banks.map((b) => b.state))].sort(),
@@ -31,13 +38,24 @@ export default function BloodBankSearch({ banks }) {
     return [...new Set(scoped.map((b) => b.city))].sort();
   }, [banks, state]);
 
-  const filtered = banks.filter(
-    (b) => (!state || b.state === state) && (!city || b.city === city)
+  const filtered = useMemo(
+    () =>
+      banks.filter(
+        (bank) =>
+          (!state || bank.state === state) &&
+          (!city || bank.city === city) &&
+          (!searchTerm ||
+            bank.name.toLowerCase().includes(searchTerm) ||
+            bank.address?.toLowerCase().includes(searchTerm))
+      ),
+    [banks, state, city, searchTerm]
   );
 
   const clearFilters = () => {
     setState("");
     setCity("");
+    setSearchText("");
+    setSearchTerm("");
   };
 
   return (
@@ -88,6 +106,22 @@ export default function BloodBankSearch({ banks }) {
               </option>
             ))}
           </select>
+        </div>
+
+        <div className="flex-1">
+          <label
+            htmlFor="bank-search"
+            className="block text-sm font-medium text-gray-700"
+          >
+            {t("bloodBanks.filterTextLabel")}
+          </label>
+          <input
+            id="bank-search"
+            type="search"
+            value={searchText}
+            onChange={(event) => setSearchText(event.target.value)}
+            className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-2 focus:outline-offset-2 focus:outline-brand"
+          />
         </div>
       </div>
 

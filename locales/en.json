@@ -79,6 +79,7 @@
     "eraktkoshCardCta": "Open e-RaktKosh",
     "filterStateLabel": "Filter by state",
     "filterCityLabel": "Filter by city",
+    "filterTextLabel": "Search by blood bank name or address",
     "allStates": "All states",
     "allCities": "All cities",
     "noResults": "No demo blood banks match these filters.",
